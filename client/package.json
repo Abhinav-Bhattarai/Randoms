@@ -49,5 +49,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.0.2",
+    "@types/react-router-dom": "^5.1.8"
   }
 }
