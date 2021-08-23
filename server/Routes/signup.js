@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import RegisterModel from "../Model/register-model.js";
 import { Encrypt } from "../Cryptography/crypto.js";
+import { SignupMiddleware } from "../Middleware/SignupMiddleware.js";
 const router = express.Router();
 
 const HashPassword = async (Password) => {
