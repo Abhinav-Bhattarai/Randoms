@@ -1,0 +1,92 @@
+#navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 10px 0;
+
+  .apple-logo {
+    color: #fff;
+    font-size: 56px;
+  }
+
+  #logo-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    #logo-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 2%;
+      cursor: pointer;
+
+      #logo-name {
+        font-weight: bold;
+        color: #fefefe;
+        margin-left: 3%;
+        font-size: 19.2px;
+        font-family: sans-serif;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  #navigator-section {
+    flex: 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    .navigators {
+      border-radius: 8px;
+      font-weight: bold;
+      width: 24%;
+      display: flex;
+      cursor: pointer;
+      transition: background 0.4s;
+      margin: 0 2%;
+
+      .inner-navigators {
+        padding: 14px 0;
+        display: flex;
+        align-items: center;
+        border: 2px solid #00acee;
+        justify-content: center;
+        color: #fefefe;
+        text-decoration: none;
+        flex: 1;
+        border-radius: 8px;
+      }
+
+      .active-signup {
+        background-color: #ff385c;
+      }
+      .active-login {
+        background-color: #00acee;
+      }
+
+      &:hover {
+        background-color: #00acee;
+      }
+    }
+
+    .signup-navigator {
+      margin-right: 6%;
+
+      .inner-navigators {
+        border: 2px solid #ff385c;
+      }
+
+      &:hover {
+        background-color: #ff385c;
+      }
+    }
+  }
+
+  #mid-nav-section {
+    flex: 2;
+  }
+}

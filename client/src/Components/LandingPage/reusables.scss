@@ -1,0 +1,89 @@
+// @import url('../../_mixins.scss');
+@mixin centerFlex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#form-container {
+  width: 40%;
+  @include centerFlex;
+  flex-direction: column;
+  margin: 20px auto;
+  background-color: #181818;
+  padding-bottom: 20px;
+  border-radius: 10px;
+
+  #form-header {
+    padding: 20px 0;
+    @include centerFlex;
+    font-weight: bold;
+    font-size: 21px;
+    width: 100%;
+    color: #fefefe;
+    font-family: sans-serif;
+    letter-spacing: 1px;
+  }
+
+  #submit-form {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+
+    label {
+      font-weight: bold;
+      margin: 10px 0;
+      font-size: 15px;
+      color: #fefefe;
+    }
+
+    input {
+      padding: 18px 2%;
+      border-radius: 6px;
+      font-weight: bold;
+      border: none;
+      background-color: #efefef;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    #form-submit-btn {
+      margin: 15px 0;
+      margin-bottom: 2px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      padding: 15px 0;
+      margin-top: 30px;
+      background-color: #20d760;
+      color: #fefefe;
+      cursor: pointer;
+      transition: 0.3s;
+
+      &:hover {
+          background-color: #07ca4c;
+      }
+    }
+  }
+
+  #form-navigation-btn {
+    margin: 5px 0;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    padding: 15px 0;
+    background-color: rgb(59, 59, 59);
+    color: #fefefe;
+    width: 90%;
+    cursor: pointer;
+
+    transition: 0.3s;
+
+    &:hover {
+        background-color: rgb(65, 65, 65);
+    }
+  }
+}

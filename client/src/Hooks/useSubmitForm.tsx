@@ -27,26 +27,29 @@ const useSubmitForm = (config: Config) => {
         setLoading(true);
         const uri = formContent[formContent.length - 1];
         const type = uri.split('/')[1];
-        const configData: configDataType = {
+        let configData: configDataType = {
             Username: formContent[0],
             Password: formContent[1]
         };
-        if (type === 'signup') configData['Confirm'] = formContent[2];
+        if (type === 'signup') {
+            configData = {...configData, Confirm: formContent[2]};
+        }
         const EncryptedData = Encrypt(configData);
         const { data } = await axios.post(uri, {Enc: EncryptedData});
-        if (data.error === false) {
-            const DecryptedData = Decrypt(data);
+        if (data.Error === false) {
+            const DecryptedData = Decrypt(data.Enc);
             if (DecryptedData) {
                 const conf = {
                     authToken: DecryptedData.authToken,
                     userName: formContent[0],
-                    userID: DecryptedData._id
+                    userID: DecryptedData.userID
                 }
                 setLoading(false);
                 onComplete(conf, false);
                 return
             }
             setLoading(false);
+            return
         } else {
             onError(true);
             return

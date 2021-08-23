@@ -4,6 +4,7 @@ import { useState } from "react";
 import Spinner from "../../Components/UI/Spinner/spinner";
 import useSubmitForm from "../../Hooks/useSubmitForm";
 import { useEffect } from "react";
+import Navbar from "../../Components/LandingPage/Navbar/navbar";
 
 interface ContainerProps {
   ChangeAuthentication: (type: boolean) => void;
@@ -17,20 +18,25 @@ const AsyncSignupPage = React.lazy(
 );
 
 const CheckLoginCredentials = (username: string, password: string) => {
-    if (username.length > 5 && password.length > 7) return true;
-    return false;
+  if (username.length > 5 && password.length > 7) return true;
+  return false;
 };
 
-const CheckSignupCredentials = (username: string, password: string, confirm: string) => {
-    if (username.length > 5 && password.length > 7 && password === confirm) return true;
-    return false;
+const CheckSignupCredentials = (
+  username: string,
+  password: string,
+  confirm: string
+) => {
+  if (username.length > 5 && password.length > 7 && password === confirm)
+    return true;
+  return false;
 };
 
 const CheckRegex = (password: string) => {
-    const regex = /[0-9]/;
-    if (regex.exec(password) !== null) return true;
-    return false;
-}
+  const regex = /[0-9]/;
+  if (regex.exec(password) !== null) return true;
+  return false;
+};
 
 const LandingPage: React.FC<ContainerProps> = (props) => {
   const [username_login, setLoginUsername] = useState<string>("");
@@ -40,16 +46,16 @@ const LandingPage: React.FC<ContainerProps> = (props) => {
   const [confirm_signup, setSignupConfirm] = useState<string>("");
 
   const { loading, SubmitForms } = useSubmitForm({
-      onComplete: (data, error) => {
-        localStorage.setItem('authToken', data.authToken);
-        localStorage.setItem('userID', data.userID);
-        localStorage.setItem('userName', data.userName);
-        props.ChangeAuthentication(true);
-      },
+    onComplete: (data, error) => {
+      localStorage.setItem("authToken", data.authToken);
+      localStorage.setItem("userID", data.userID);
+      localStorage.setItem("userName", data.userName);
+      props.ChangeAuthentication(true);
+    },
 
-      onError: (error) => {
-        console.log(error);
-      }
+    onError: (error) => {
+      console.log(error);
+    },
   });
 
   const ChangeLoginCredential = (
@@ -90,28 +96,39 @@ const LandingPage: React.FC<ContainerProps> = (props) => {
   };
 
   const SubmitCredentials = (event: React.FormEvent, type: string) => {
-      event.preventDefault();
-      if (type === 'login') {
-          const CredentialValidity = CheckLoginCredentials(username_login, password_login);
-          const RegexValidity = CheckRegex(password_login);
-          if (CredentialValidity && RegexValidity) {
-            SubmitForms(username_login, password_login, '/login');
-          }
-      } else if (type === 'signup') {
-        const CredentialValidity = CheckSignupCredentials(username_signup, password_signup, confirm_signup);
-        const RegexValidity = CheckRegex(password_signup);
-        if (CredentialValidity && RegexValidity) {
-          SubmitForms(username_signup, password_signup, confirm_signup, '/signup');
-        }
+    event.preventDefault();
+    if (type === "login") {
+      const CredentialValidity = CheckLoginCredentials(
+        username_login,
+        password_login
+      );
+      const RegexValidity = CheckRegex(password_login);
+      if (CredentialValidity && RegexValidity) {
+        SubmitForms(username_login, password_login, "/login");
       }
+    } else if (type === "signup") {
+      const CredentialValidity = CheckSignupCredentials(
+        username_signup,
+        password_signup,
+        confirm_signup
+      );
+      const RegexValidity = CheckRegex(password_signup);
+      if (CredentialValidity && RegexValidity) {
+        SubmitForms(
+          username_signup,
+          password_signup,
+          confirm_signup,
+          "/signup"
+        );
+      }
+    }
   };
 
-  useEffect(() => {
-
-  }, [loading]);
+  useEffect(() => {}, [loading]);
 
   return (
     <React.Fragment>
+      <Navbar />
       <Switch>
         <Route
           path="/login"

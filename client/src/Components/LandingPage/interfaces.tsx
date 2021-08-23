@@ -23,6 +23,11 @@ export interface SignupProps {
 
 export interface FormElementProps {
   Submit: (event: React.FormEvent, type: string) => void;
+  type: 'signup' | 'login';
+}
+
+export interface FormHeaderProps {
+  name: string;
 }
 
 export interface FormInputProps {

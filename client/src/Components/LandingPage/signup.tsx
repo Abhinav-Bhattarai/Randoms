@@ -3,8 +3,10 @@ import { SignupProps } from "./interfaces";
 import {
   FormContainer,
   FormElement,
+  FormHeader,
   FormInput,
   FormInputLabel,
+  FormNavigationButton,
   FormSubmitButton,
 } from "./reusables";
 
@@ -14,7 +16,8 @@ const Signup: React.FC<SignupProps> = (props) => {
   return (
     <React.Fragment>
       <FormContainer>
-        <FormElement Submit={Submit}>
+        <FormHeader name='Signup'/>
+        <FormElement type='signup' Submit={Submit}>
 
           <FormInputLabel label="Username" html_for="signup_username" />
           <FormInput
@@ -48,6 +51,7 @@ const Signup: React.FC<SignupProps> = (props) => {
           <FormSubmitButton name='Create Account'/>
 
         </FormElement>
+        <FormNavigationButton navigateTo='/login' name='Already have an account ?'/>
       </FormContainer>
     </React.Fragment>
   );

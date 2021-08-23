@@ -3,8 +3,10 @@ import { LoginProps } from "./interfaces";
 import {
   FormContainer,
   FormElement,
+  FormHeader,
   FormInput,
   FormInputLabel,
+  FormNavigationButton,
   FormSubmitButton,
 } from "./reusables";
 
@@ -13,7 +15,8 @@ const Login: React.FC<LoginProps> = (props) => {
   return (
     <React.Fragment>
       <FormContainer>
-        <FormElement Submit={Submit}>
+        <FormHeader name='Login'/>
+        <FormElement type='login' Submit={Submit}>
           <FormInputLabel label="Username" html_for="login_username" />
           <FormInput
             name="login_username"
@@ -35,6 +38,7 @@ const Login: React.FC<LoginProps> = (props) => {
           />
           <FormSubmitButton name='Login'/>
         </FormElement>
+        <FormNavigationButton navigateTo='/signup' name='Create new Account'/>
       </FormContainer>
     </React.Fragment>
   );
