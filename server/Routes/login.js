@@ -29,6 +29,7 @@ const CheckFromDB = async (Username, Password) => {
 const Create_JWT_Token = (data) => {
   const token = jwt.sign(JSON.stringify(data), process.env.JWT_AUTH_TOKEN, {
     expiresIn: 86400,
+    algorithm: "RS512",
   });
   return token;
 };

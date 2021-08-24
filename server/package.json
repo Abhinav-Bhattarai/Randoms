@@ -13,7 +13,8 @@
   "author": "Abhinav Bhattarai",
   "license": "MIT",
   "dependencies": {
-    "async-redis": "^2.0.0",
+    "@types/async-redis": "^1.1.2",
+    "async-redis": "^1.1.7",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",

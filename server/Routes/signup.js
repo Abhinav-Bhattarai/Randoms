@@ -24,7 +24,7 @@ router.post("/", SignupMiddleware, async (req, res) => {
   Password = HashPassword(Password);
   const config = {
     Username,
-    Password,
+    Password
   };
   const postData = new RegisterModel(config);
   const postResponse = await postData.save();
