@@ -1,5 +1,6 @@
 import React from "react";
-import { AiFillApple } from "react-icons/ai";
+// import { AiFillApple } from "react-icons/ai";
+import LogoA from '../../../assets/logo.svg';
 import { IconContext } from "react-icons";
 import "./navbar.scss";
 import { NavLink } from "react-router-dom";
@@ -18,7 +19,8 @@ const LogoSection: React.FC<{}> = (props) => {
       <main id="logo-container">
         <article id="logo-content">
           <Logo className="apple-logo">
-            <AiFillApple />
+            {/* <AiFillApple /> */}
+            <img src={LogoA} alt='logo' width='60px' height='60px'/>
           </Logo>
           <div id="logo-name">Randoms</div>
         </article>

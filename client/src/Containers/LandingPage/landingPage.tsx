@@ -4,6 +4,7 @@ import { useState } from "react";
 import Spinner from "../../Components/UI/Spinner/spinner";
 import useSubmitForm from "../../Hooks/useSubmitForm";
 import { useEffect } from "react";
+import "./landingPage.scss";
 import Navbar from "../../Components/LandingPage/Navbar/navbar";
 
 interface ContainerProps {
@@ -36,6 +37,17 @@ const CheckRegex = (password: string) => {
   const regex = /[0-9]/;
   if (regex.exec(password) !== null) return true;
   return false;
+};
+
+const Animator = () => {
+  return (
+    <React.Fragment>
+      <div className="ocean">
+        <div className="wave"></div>
+        <div className="wave"></div>
+      </div>
+    </React.Fragment>
+  );
 };
 
 const LandingPage: React.FC<ContainerProps> = (props) => {
@@ -129,6 +141,7 @@ const LandingPage: React.FC<ContainerProps> = (props) => {
   return (
     <React.Fragment>
       <Navbar />
+      <Animator/>
       <Switch>
         <Route
           path="/login"
