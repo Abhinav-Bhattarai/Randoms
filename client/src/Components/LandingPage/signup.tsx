@@ -46,7 +46,7 @@ const Signup: React.FC<SignupProps> = (props) => {
             formType="confirm"
             placeholder="Confirm"
             value={confirm}
-            Change={(event) => ChangeSignupCred(event, "password")}
+            Change={(event) => ChangeSignupCred(event, 'confirm')}
           />
           <FormSubmitButton name='Create Account'/>
 

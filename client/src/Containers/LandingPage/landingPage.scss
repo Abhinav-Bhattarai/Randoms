@@ -1,5 +1,5 @@
 .ocean {
-  height: 3.7%;
+  height: 7.7%;
   width: 100%;
   position: fixed;
   bottom: 0;
@@ -38,7 +38,7 @@
 @keyframes swell {
   0%,
   100% {
-    transform: translate3d(0, -25px, 0);
+    transform: translate3d(0, -20px, 0);
   }
   50% {
     transform: translate3d(0, 5px, 0);

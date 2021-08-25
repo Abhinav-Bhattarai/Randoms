@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://localhost:8000",
+  "proxy": "https://localhost:8080",
   "dependencies": {
     "@apollo/client": "^3.4.8",
     "@testing-library/jest-dom": "^5.14.1",
@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^4.0.2",
-    "@types/react-router-dom": "^5.1.8"
+    "@types/react-router-dom": "^5.1.8",
+    "@types/socket.io-client": "^3.0.0"
   }
 }
