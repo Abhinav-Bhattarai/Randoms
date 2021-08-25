@@ -1,4 +1,6 @@
 import crypto from "crypto-js";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const Encrypt = (data) => {
   const bytes = crypto.AES.encrypt(

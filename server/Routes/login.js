@@ -6,17 +6,19 @@ dotenv.config();
 import { LoginMiddleware } from "../Middleware/LoginMiddleware.js";
 import RegisterModel from "../Model/register-model.js";
 import { Encrypt } from "../Cryptography/crypto.js";
+import { GenerateAuthToken } from "./signup.js";
 const router = express.Router();
-// JWT => { Username: string; _id: string; }
 
 const CheckPasswordHash = async (password, hashedPassword) => {
   const data = await bcrypt.compare(password, hashedPassword);
+  console.log(data);
   return data;
 };
 
 const CheckFromDB = async (Username, Password) => {
-  const response = await RegisterModel.find({ Username });
+  const response = await RegisterModel.findOne({ Username });
   if (response) {
+    console.log(response);
     const PasswordCheck = await CheckPasswordHash(Password, response.Password);
     if (PasswordCheck) {
       return { status: true, id: response._id };
@@ -26,19 +28,13 @@ const CheckFromDB = async (Username, Password) => {
   return { status: false, id: null };
 };
 
-const Create_JWT_Token = (data) => {
-  const token = jwt.sign(JSON.stringify(data), process.env.JWT_AUTH_TOKEN, {
-    expiresIn: 86400,
-    algorithm: "RS512",
-  });
-  return token;
-};
 
 router.post("/", LoginMiddleware, async (req, res) => {
   let { Username, Password } = req.body;
+  console.log(req.body);
   const statusCode = await CheckFromDB(Username, Password);
   if (statusCode.status) {
-    const authToken = Create_JWT_Token({ Username, _id: statusCode.id });
+    const authToken = GenerateAuthToken({ Username, _id: statusCode.id });
     const EncryptedData = Encrypt({
       authToken,
       userID: statusCode.id

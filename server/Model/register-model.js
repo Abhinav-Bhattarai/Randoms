@@ -11,7 +11,7 @@ const Schema = new mongoose.Schema({
     },
     CreationDate: {
         type: String,
-        default: new Date(parseInt(Date.now())).toLocaleDateString,
+        default: new Date(parseInt(Date.now())).toLocaleDateString(),
         // required: false
     }
 });

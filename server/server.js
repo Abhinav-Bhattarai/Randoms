@@ -15,7 +15,7 @@ import AuthRoute from "./Routes/check-auth.js";
 import LoginRoute from "./Routes/login.js";
 import SignupRoute from "./Routes/signup.js";
 import MainSchema from "./GraphQL/MainConf.js";
-import { AddIdToRedisQueue, UpdateRedisQueue } from "./helper.js";
+import { AddIdToRedisQueue, ImplementMassSocketConnection, UpdateRedisQueue } from "./helper.js";
 dotenv.config();
 const cache = redis.createClient();
 
@@ -45,26 +45,29 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  socket.on("join", (id) => {
-    const STRINGLIFIED_QUEUE = await cache.get("QUEUE");
-    if (STRINGLIFIED_QUEUE === null) {
-      AddIdToRedisQueue(id);
-      socket.join(id);
-    } else {
-      const QUEUE = JSON.parse(STRINGLIFIED_QUEUE);
-      if (QUEUE.length === 0) {
-        AddIdToRedisQueue(id);
-        socket.join(id);
+  socket.on("join", async(id) => {
+    const STRINGLIFIED_QUEUE = await cache.get("MainQUEUE");
+    const MainQueue = JSON.parse(STRINGLIFIED_QUEUE);
+    if (MainQueue) {
+      MainQueue.push({id, socketID: socket});
+      AddIdToRedisQueue(cache, MainQueue);
+    };
+    setInterval(async() => {
+      const QUEUE = await cache.get('MainQUEUE');
+      const dummy = [...JSON.parse(QUEUE)];
+      if (dummy.length % 2 === 0) {
+        ImplementMassSocketConnection(cache, dummy, socket);
       } else {
-        const PairedID = UpdateRedisQueue(cache);
-        socket.join(PairedID);
+        await cache.set('MainQueue', JSON.stringify([dummy[dummy.length - 1]]));
+        dummy.pop();
+        ImplementMassSocketConnection(cache, dummy, socket);
       }
-    }
+    }, 4000);
   });
-  socket.on("disconnect", () => {
-    console.log("disconnected");
-  });
+
+  socket.on("disconnect", () => {});
 });
+
 
 // GraphQL
 app.use(
@@ -83,7 +86,12 @@ app.use("/signup", SignupRoute);
 
 // DB connection
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    useCreateIndex: true,
+    useFindAndModify: true,
+    useUnifiedTopology: true,
+    useNewUrlParser: true
+  })
   .then(() => {
     console.log("Connected to mongoDB");
   })
