@@ -5,7 +5,7 @@ import { IconContext } from "react-icons";
 import "./navbar.scss";
 import { NavLink } from "react-router-dom";
 
-const Logo: React.FC<{ className: string }> = ({ className, children }) => {
+export const Logo: React.FC<{ className: string }> = ({ className, children }) => {
   return (
     <IconContext.Provider value={{ className: `logo ${className}` }}>
       {children}
@@ -13,23 +13,23 @@ const Logo: React.FC<{ className: string }> = ({ className, children }) => {
   );
 };
 
-const LogoSection: React.FC<{}> = (props) => {
+export const LogoSection: React.FC<{}> = (props) => {
   return (
     <React.Fragment>
       <main id="logo-container">
         <article id="logo-content">
           <Logo className="apple-logo">
             {/* <AiFillApple /> */}
-            <img src={LogoA} alt='logo' width='60px' height='60px'/>
+            <img src={LogoA} alt='logo' width='55px' height='55px'/>
           </Logo>
-          <div id="logo-name">Randoms</div>
+          <div id="logo-name">andoms</div>
         </article>
       </main>
     </React.Fragment>
   );
 };
 
-const MidSection: React.FC<{}> = () => {
+export const MidSection: React.FC<{}> = () => {
   return (
     <React.Fragment>
       <main id="mid-nav-section"></main>
@@ -37,7 +37,7 @@ const MidSection: React.FC<{}> = () => {
   );
 };
 
-const Navigators: React.FC<{ name: string; addon: string }> = ({
+export const Navigators: React.FC<{ name: string; addon: string }> = ({
   name,
   addon,
 }) => {
@@ -56,7 +56,7 @@ const Navigators: React.FC<{ name: string; addon: string }> = ({
   );
 };
 
-const NavigatorSection: React.FC<{}> = ({ children }) => {
+export const NavigatorSection: React.FC<{}> = ({ children }) => {
   return (
     <React.Fragment>
       <main id="navigator-section">{children}</main>
@@ -64,7 +64,7 @@ const NavigatorSection: React.FC<{}> = ({ children }) => {
   );
 };
 
-const NavbarContainer: React.FC<{}> = ({ children }) => {
+export const NavbarContainer: React.FC<{}> = ({ children }) => {
   return <nav id="navbar-container">{children}</nav>;
 };
 
