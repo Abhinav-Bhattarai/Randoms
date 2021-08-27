@@ -15,7 +15,7 @@ import AuthRoute from "./Routes/check-auth.js";
 import LoginRoute from "./Routes/login.js";
 import SignupRoute from "./Routes/signup.js";
 import MainSchema from "./GraphQL/MainConf.js";
-import { AddIdToRedisQueue, ImplementMassSocketConnection, UpdateRedisQueue } from "./helper.js";
+import { AddIdToRedisQueue, ImplementMassSocketConnection } from "./helper.js";
 dotenv.config();
 const cache = redis.createClient();
 
@@ -49,25 +49,37 @@ io.on("connection", (socket) => {
     const STRINGLIFIED_QUEUE = await cache.get("MainQUEUE");
     const MainQueue = JSON.parse(STRINGLIFIED_QUEUE);
     if (MainQueue) {
-      MainQueue.push({id, socketID: socket});
+      MainQueue.push({roomID: id, socketID: socket.id});
       AddIdToRedisQueue(cache, MainQueue);
     };
     setInterval(async() => {
       const QUEUE = await cache.get('MainQUEUE');
       const dummy = [...JSON.parse(QUEUE)];
-      if (dummy.length % 2 === 0) {
-        ImplementMassSocketConnection(cache, dummy, socket);
-      } else {
-        await cache.set('MainQueue', JSON.stringify([dummy[dummy.length - 1]]));
-        dummy.pop();
-        ImplementMassSocketConnection(cache, dummy, socket);
+      if (dummy.length !== 0 || dummy.length !== 1) {
+        if (dummy.length % 2 === 0) {
+          await cache.set('MainQUEUE', JSON.stringify([]));
+          ImplementMassSocketConnection(dummy, socket);
+        } else {
+          await cache.set('MainQUEUE', JSON.stringify([dummy[dummy.length - 1]]));
+          dummy.pop();
+          ImplementMassSocketConnection(dummy, socket);
+        }
       }
-    }, 4000);
+    }, 5000);
   });
+
+  socket.on('notify-broadcaster', roomID => {
+    socket.emit('notification', roomID);
+  })
+
+  socket.on("message", data => {
+    const { roomID, message } = data;
+    const id = Math.floor(Math.random() * 100000000).toString();
+    socket.broadcast.to(roomID).emit("message-receiver", {message, id});
+  })
 
   socket.on("disconnect", () => {});
 });
-
 
 // GraphQL
 app.use(
