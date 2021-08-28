@@ -1,22 +1,29 @@
 import React from "react";
-import '../style.scss';
+import "../style.scss";
 
-export const Video = () => {
-  return (
+export const Video: React.FC<{ Reference: React.RefObject<HTMLVideoElement> }> =
+  (props) => {
+    const { Reference } = props;
+    return (
       <React.Fragment>
-          <div id='video-holder'>
-              
-          </div>
+        <div id="video-holder">
+          <video
+            id="video-player"
+            width="100%"
+            autoPlay
+            playsInline
+            height="100%"
+            ref={Reference}
+          ></video>
+        </div>
       </React.Fragment>
-  );
-};
+    );
+  };
 
 const VideoSection: React.FC<{}> = ({ children }) => {
   return (
     <React.Fragment>
-      <main id="video-section">
-        {children}
-      </main>
+      <main id="video-section">{children}</main>
     </React.Fragment>
   );
 };

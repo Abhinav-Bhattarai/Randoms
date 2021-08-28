@@ -1,13 +1,12 @@
 import React from "react";
-
+import '../style.scss'
 interface MessageSenderProps {
   value: string | undefined;
   Change: (event: React.ChangeEvent<HTMLInputElement>) => void;
   KeyChange: (event: React.KeyboardEvent<HTMLInputElement>) => void;
-  Reference: React.RefObject<HTMLInputElement>
 }
 export const MessageSender: React.FC<MessageSenderProps> = (props) => {
-  const { value, Change, KeyChange, Reference } = props;
+  const { value, Change, KeyChange } = props;
   return (
     <div id="messege-sender-container">
       <input
@@ -17,7 +16,6 @@ export const MessageSender: React.FC<MessageSenderProps> = (props) => {
         spellCheck="false"
         id="messege-sender-input"
         onKeyPress={KeyChange}
-        ref={Reference}
       />
     </div>
   );

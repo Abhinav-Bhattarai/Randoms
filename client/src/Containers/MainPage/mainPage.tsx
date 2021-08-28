@@ -12,6 +12,7 @@ import VideoSection, {
   Video,
 } from "../../Components/MainPage/VideoSection/video-section";
 import Default from "../../Components/UI/Default/default";
+import "./mainPage.scss";
 interface ContainerProps {
   ChangeAuthentication: (type: boolean) => void;
 }
@@ -45,6 +46,7 @@ const client = new ApolloClient({
 interface MessageType {
   message: string;
   id: string;
+  self: boolean;
 }
 
 const MainPage: React.FC<ContainerProps> = (props) => {
@@ -52,28 +54,48 @@ const MainPage: React.FC<ContainerProps> = (props) => {
   const [userInfo, setUserInfo] = useState<configType | null>(null);
   const [conn_roomID, setroomID] = useState<string | null>(null);
   const [messageList, setMessageList] = useState<Array<MessageType>>([]);
-  const messageValue = useRef<HTMLInputElement>(null);
+  const [messageValue, setMessageValue] = useState<string>("");
+  const MyVideoRef = useRef<HTMLVideoElement>(null);
+  const PeerVideoRef = useRef<HTMLVideoElement>(null);
 
   const ChangeMessageValue = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    if (messageValue.current) {
-      messageValue.current.value = value;
-    }
+    setMessageValue(value);
+  };
+
+  const UpdateMessageList = (data: MessageType) => {
+    const dummy = [...messageList];
+    dummy.push(data);
+    setMessageList(dummy);
   };
 
   const KeyPressHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && socket && messageValue.current) {
+    if (event.key === "Enter" && socket) {
       socket.emit("message", {
         roomID: conn_roomID,
-        message: messageValue.current.value,
+        message: messageValue,
       });
-      messageValue.current.value = "";
+      const id = Math.floor(Math.random() * 100000000).toString();
+      UpdateMessageList({ message: messageValue, id, self: true });
+      setMessageValue("");
     }
   };
 
+  const ManageMyVideoStream = async() => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+      if (MyVideoRef.current) {
+        MyVideoRef.current.srcObject = stream;
+      } 
+    } catch(error) {
+      console.log(error)
+    }
+  }
+
   const StartSocketConn = () => {
     if (socket && userInfo) {
-      socket.emit("join", userInfo.userID);
+      // socket.emit("join", userInfo.userID);
+      ManageMyVideoStream();
     }
   };
 
@@ -103,13 +125,12 @@ const MainPage: React.FC<ContainerProps> = (props) => {
       });
 
       socket.on("notification", (roomID: string) => {
+        console.log(roomID);
         setroomID(roomID);
       });
 
       socket.on("message-receiver", (data: MessageType) => {
-        const dummy = [...messageList];
-        dummy.push(data);
-        setMessageList(dummy);
+        UpdateMessageList({ ...data, self: false });
       });
 
       return () => {
@@ -121,15 +142,29 @@ const MainPage: React.FC<ContainerProps> = (props) => {
   });
 
   const MessageContents = useMemo(() => {
-    return (
-      <React.Fragment>
-        <div id="message-container">
+    if (messageList.length > 0) {
+      return (
+        <React.Fragment>
           {messageList.map((data) => {
-            return <div key={data.id} id='message-content'>{data.message}</div>;
+            return (
+              <div
+                key={data.id}
+                id="message-container"
+                className={`message-${data.self}`}
+              >
+                <div
+                  id="message-content"
+                  className={`message-content-${data.self}`}
+                >
+                  {data.message}
+                </div>
+              </div>
+            );
           })}
-        </div>
-      </React.Fragment>
-    );
+        </React.Fragment>
+      );
+    }
+    return null;
   }, [messageList]);
 
   return (
@@ -137,8 +172,8 @@ const MainPage: React.FC<ContainerProps> = (props) => {
       <ApolloProvider client={client}>
         <Navbar ClickStart={StartSocketConn} ClickNext={ChangeSocketConn} />
         <VideoSection>
-          <Video />
-          <Video />
+          <Video Reference={MyVideoRef}/>
+          <Video Reference={PeerVideoRef}/>
         </VideoSection>
         <MessageSection>
           {conn_roomID !== null ? (
@@ -146,9 +181,8 @@ const MainPage: React.FC<ContainerProps> = (props) => {
               <MessagesArea>{MessageContents}</MessagesArea>
               <MessageSender
                 Change={ChangeMessageValue}
-                value={messageValue.current?.value}
+                value={messageValue}
                 KeyChange={KeyPressHandler}
-                Reference={messageValue}
               />
             </>
           ) : (
@@ -160,4 +194,4 @@ const MainPage: React.FC<ContainerProps> = (props) => {
   );
 };
 
-export default MainPage;
+export default React.memo(MainPage);

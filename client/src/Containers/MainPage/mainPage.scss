@@ -1,0 +1,32 @@
+#message-container {
+  display: flex;
+  width: 98%;
+  align-items: center;
+  margin: 5px 0;
+
+  #message-content {
+    max-width: 35%;
+    padding: 10px 2%;
+    min-width: 5%;
+    border-radius: 10px;
+    font-weight: bold;
+    color: white;
+    font-size: 14px;
+  };
+
+  .message-content-true {
+    background-color: #00acee;
+  };
+
+  .message-content-false {
+    background-color: #07ca4c;
+  }
+}
+
+.message-true {
+  justify-content: flex-start;
+}
+
+.message-false {
+  justify-content: flex-end;
+}

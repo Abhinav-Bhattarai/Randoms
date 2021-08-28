@@ -60,4 +60,4 @@ const Navbar: React.FC<NavbarProps> = (props) => {
   );
 };
 
-export default Navbar;
+export default React.memo(Navbar);
