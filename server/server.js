@@ -53,8 +53,10 @@ io.on("connection", (socket) => {
       AddIdToRedisQueue(cache, MainQueue);
     };
     setInterval(async() => {
+      console.log('interval');
       const QUEUE = await cache.get('MainQUEUE');
       const dummy = [...JSON.parse(QUEUE)];
+      console.log(dummy);
       if (dummy.length !== 0 || dummy.length !== 1) {
         if (dummy.length % 2 === 0) {
           await cache.set('MainQUEUE', JSON.stringify([]));
@@ -69,8 +71,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on('notify-broadcaster', roomID => {
-    socket.emit('notification', roomID);
-  })
+    socket.broadcast.to(roomID).emit('notification', roomID);
+  });
 
   socket.on("message", data => {
     const { roomID, message } = data;
