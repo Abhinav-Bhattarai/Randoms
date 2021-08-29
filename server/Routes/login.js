@@ -11,14 +11,12 @@ const router = express.Router();
 
 const CheckPasswordHash = async (password, hashedPassword) => {
   const data = await bcrypt.compare(password, hashedPassword);
-  console.log(data);
   return data;
 };
 
 const CheckFromDB = async (Username, Password) => {
   const response = await RegisterModel.findOne({ Username });
   if (response) {
-    console.log(response);
     const PasswordCheck = await CheckPasswordHash(Password, response.Password);
     if (PasswordCheck) {
       return { status: true, id: response._id };
@@ -31,7 +29,6 @@ const CheckFromDB = async (Username, Password) => {
 
 router.post("/", LoginMiddleware, async (req, res) => {
   let { Username, Password } = req.body;
-  console.log(req.body);
   const statusCode = await CheckFromDB(Username, Password);
   if (statusCode.status) {
     const authToken = GenerateAuthToken({ Username, _id: statusCode.id });

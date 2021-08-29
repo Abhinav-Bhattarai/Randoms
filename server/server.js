@@ -30,7 +30,11 @@ const server = https.createServer(config, app);
 // middleware
 app.use(
   cors({
-    origin: ["https://localhost:3000"],
+    origin: [
+      "https://localhost:3000",
+      "https://192.168.56.1:3000",
+      "https://192.168.0.104:3000",
+    ],
   })
 );
 app.use(express.json({ limit: "50mb" }));
@@ -38,31 +42,37 @@ app.use(express.json({ limit: "50mb" }));
 // Socket connection
 const io = new Server(server, {
   cors: {
-    origin: "https://localhost:3000",
+    origin: [
+      "https://localhost:3000",
+      "https://192.168.56.1:3000",
+      "https://192.168.0.104:3000",
+    ],
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
 io.on("connection", (socket) => {
-  socket.on("join", async(id) => {
+  socket.on("join", async (id) => {
+    socket.handshake.query.myRoomID = id;
     const STRINGLIFIED_QUEUE = await cache.get("MainQUEUE");
     const MainQueue = JSON.parse(STRINGLIFIED_QUEUE);
     if (MainQueue) {
-      MainQueue.push({roomID: id, socketID: socket.id});
+      MainQueue.push({ roomID: id, socketID: socket.id });
       AddIdToRedisQueue(cache, MainQueue);
-    };
-    setInterval(async() => {
-      console.log('interval');
-      const QUEUE = await cache.get('MainQUEUE');
+    }
+    setInterval(async () => {
+      const QUEUE = await cache.get("MainQUEUE");
       const dummy = [...JSON.parse(QUEUE)];
-      console.log(dummy);
-      if (dummy.length !== 0 || dummy.length !== 1) {
+      if (dummy.length > 1) {
         if (dummy.length % 2 === 0) {
-          await cache.set('MainQUEUE', JSON.stringify([]));
+          await cache.set("MainQUEUE", JSON.stringify([]));
           ImplementMassSocketConnection(dummy, socket);
         } else {
-          await cache.set('MainQUEUE', JSON.stringify([dummy[dummy.length - 1]]));
+          await cache.set(
+            "MainQUEUE",
+            JSON.stringify([dummy[dummy.length - 1]])
+          );
           dummy.pop();
           ImplementMassSocketConnection(dummy, socket);
         }
@@ -70,17 +80,35 @@ io.on("connection", (socket) => {
     }, 5000);
   });
 
-  socket.on('notify-broadcaster', roomID => {
-    socket.broadcast.to(roomID).emit('notification', roomID);
+  socket.on("notify-broadcaster", (roomID) => {
+    socket.handshake.query.myRoomID = roomID;
+    socket.broadcast.to(roomID).emit("notification", roomID);
   });
 
-  socket.on("message", data => {
+  socket.on("peerServer", (data) => {
+    const { roomID, signalData } = data;
+    socket.broadcast.to(roomID).emit("peerClientConnectionHandler", signalData);
+  });
+
+  socket.on("message", (data) => {
     const { roomID, message } = data;
     const id = Math.floor(Math.random() * 100000000).toString();
-    socket.broadcast.to(roomID).emit("message-receiver", {message, id});
-  })
+    socket.broadcast.to(roomID).emit("message-receiver", { message, id });
+  });
 
-  socket.on("disconnect", () => {});
+  socket.on("disconnect", () => {
+    const roomID = socket.handshake.query.myRoomID;
+    const client = io.sockets.adapter.rooms.get(roomID);
+    if (client) {
+      const clientArr = Array.from(client);
+      if (clientArr.length > 0) {
+        if (io.sockets.sockets.get(clientArr[0])) {
+          io.sockets.sockets.get(clientArr[0]).leave(roomID);
+        }
+        io.to(clientArr[0]).emit("requestReconnection");
+      }
+    }
+  });
 });
 
 // GraphQL
@@ -104,7 +132,7 @@ mongoose
     useCreateIndex: true,
     useFindAndModify: true,
     useUnifiedTopology: true,
-    useNewUrlParser: true
+    useNewUrlParser: true,
   })
   .then(() => {
     console.log("Connected to mongoDB");

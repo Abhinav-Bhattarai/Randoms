@@ -9,9 +9,11 @@ export const ImplementMassSocketConnection = async(dummy, socket) => {
   let providerID = 0;
   let consumerID = 0;
   for (providerID of PROVIDER_QUEUE) {
+    console.log(providerID.socketID, providerID.roomID);
     socket.joinTwoWay(providerID.socketID, providerID.roomID);
   }
   for (consumerID in CONSUMER_QUEUE) {
+    console.log(CONSUMER_QUEUE[consumerID].socketID, PROVIDER_QUEUE[consumerID].roomID);
     socket.joinTwoWay(CONSUMER_QUEUE[consumerID].socketID, PROVIDER_QUEUE[consumerID].roomID);
     socket.broadcast.to(PROVIDER_QUEUE[consumerID].roomID).emit('connectionReceive', PROVIDER_QUEUE[consumerID].roomID);
   }
