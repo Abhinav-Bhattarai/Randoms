@@ -2,6 +2,7 @@ import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import React, { useMemo, useRef } from "react";
 import { useEffect } from "react";
 import { useState } from "react";
+import Peer from "simple-peer";
 import { Socket, io } from "socket.io-client";
 import MessageSection, {
   MessagesArea,
@@ -55,6 +56,8 @@ const MainPage: React.FC<ContainerProps> = (props) => {
   const [conn_roomID, setroomID] = useState<string | null>(null);
   const [messageList, setMessageList] = useState<Array<MessageType>>([]);
   const [messageValue, setMessageValue] = useState<string>("");
+  const [streamData, setStream] = useState<MediaStream | null>(null);
+  const [peerData, setPeer] = useState<null | Peer.Instance>(null);
   const MyVideoRef = useRef<HTMLVideoElement>(null);
   const PeerVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -69,6 +72,22 @@ const MainPage: React.FC<ContainerProps> = (props) => {
     setMessageList(dummy);
   };
 
+  const InitiateVideoCall = (initiator: boolean, roomID: string) => {
+    if (streamData && socket) {
+      const peer = new Peer({ initiator, trickle: false, stream: streamData });
+      peer.on("signal", (signalData) => {
+        socket.emit('peerServer', {roomID, signalData});
+      });
+
+      peer.on("stream", (streamObj) => {
+        if (PeerVideoRef.current) {
+          PeerVideoRef.current.srcObject = streamObj;
+        }
+      });
+      setPeer(peer);
+    }
+  };
+
   const KeyPressHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && socket) {
       socket.emit("message", {
@@ -81,21 +100,25 @@ const MainPage: React.FC<ContainerProps> = (props) => {
     }
   };
 
-  const ManageMyVideoStream = async() => {
+  const ManageMyVideoStream = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      });
       if (MyVideoRef.current) {
+        setStream(stream);
+        // InitiateVideoCall(stream);
         MyVideoRef.current.srcObject = stream;
-      } 
-    } catch(error) {
-      console.log(error)
+      }
+    } catch (error) {
     }
-  }
+  };
 
-  const StartSocketConn = () => {
+  const StartSocketConn = async(reconnection: boolean = false) => {
     if (socket && userInfo) {
-      // socket.emit("join", userInfo.userID);
-      ManageMyVideoStream();
+      socket.emit("join", userInfo.userID);
+      if (reconnection !== true) ManageMyVideoStream();
     }
   };
 
@@ -108,7 +131,7 @@ const MainPage: React.FC<ContainerProps> = (props) => {
     }
   }, []);
 
-  // socket initian conn;
+  // socket initial conn;
   useEffect(() => {
     const ioClient = io("https://localhost:8080", {
       reconnectionDelayMax: 4000,
@@ -121,11 +144,12 @@ const MainPage: React.FC<ContainerProps> = (props) => {
     if (socket) {
       socket.on("connectionReceive", (roomID: string) => {
         setroomID(roomID);
+        InitiateVideoCall(false, roomID);
         socket.emit("notify-broadcaster", roomID);
       });
 
       socket.on("notification", (roomID: string) => {
-        console.log(roomID);
+        InitiateVideoCall(true, roomID);
         setroomID(roomID);
       });
 
@@ -133,10 +157,25 @@ const MainPage: React.FC<ContainerProps> = (props) => {
         UpdateMessageList({ ...data, self: false });
       });
 
+      socket.on('peerClientConnectionHandler', signalData => {
+        if (peerData) {
+          peerData.signal(signalData);
+        }
+      });
+
+      socket.on('requestReconnection', () => {
+        StartSocketConn(true);
+        setroomID(null);
+        setMessageList([]);
+        setMessageValue('');
+      })
+
       return () => {
         socket.off("message-receiver");
         socket.off("notification");
         socket.off("connectionReceive");
+        socket.off('requestReconnection');
+        socket.off('peerClientConnectionHandler');
       };
     }
   });
@@ -172,8 +211,8 @@ const MainPage: React.FC<ContainerProps> = (props) => {
       <ApolloProvider client={client}>
         <Navbar ClickStart={StartSocketConn} ClickNext={ChangeSocketConn} />
         <VideoSection>
-          <Video Reference={MyVideoRef}/>
-          <Video Reference={PeerVideoRef}/>
+          <Video muted={true} Reference={MyVideoRef} />
+          <Video muted={false} Reference={PeerVideoRef} />
         </VideoSection>
         <MessageSection>
           {conn_roomID !== null ? (
