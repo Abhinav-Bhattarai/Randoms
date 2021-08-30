@@ -15,7 +15,11 @@ import AuthRoute from "./Routes/check-auth.js";
 import LoginRoute from "./Routes/login.js";
 import SignupRoute from "./Routes/signup.js";
 import MainSchema from "./GraphQL/MainConf.js";
-import { AddIdToRedisQueue, ImplementMassSocketConnection } from "./helper.js";
+import {
+  HandleSocketDisconnection,
+  ImplementMassSocketConnection,
+  JoinCommunicationQueue,
+} from "./helper.js";
 dotenv.config();
 const cache = redis.createClient();
 
@@ -53,31 +57,29 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  socket.on("join", async (id) => {
-    socket.handshake.query.myRoomID = id;
-    const STRINGLIFIED_QUEUE = await cache.get("MainQUEUE");
-    const MainQueue = JSON.parse(STRINGLIFIED_QUEUE);
-    if (MainQueue) {
-      MainQueue.push({ roomID: id, socketID: socket.id });
-      AddIdToRedisQueue(cache, MainQueue);
-    }
-    setInterval(async () => {
-      const QUEUE = await cache.get("MainQUEUE");
-      const dummy = [...JSON.parse(QUEUE)];
-      if (dummy.length > 1) {
-        if (dummy.length % 2 === 0) {
-          await cache.set("MainQUEUE", JSON.stringify([]));
-          ImplementMassSocketConnection(dummy, socket);
-        } else {
-          await cache.set(
-            "MainQUEUE",
-            JSON.stringify([dummy[dummy.length - 1]])
-          );
-          dummy.pop();
-          ImplementMassSocketConnection(dummy, socket);
+  socket.on("join", async (userID) => {
+    const IntervalProcessing = await cache.get("IntervalProcessing");
+    if (IntervalProcessing === "false") {
+      await cache.set("IntervalProcessing", true);
+      setInterval(async () => {
+        const QUEUE = await cache.get("MainQUEUE");
+        const dummy = [...JSON.parse(QUEUE)];
+        if (dummy.length > 1) {
+          if (dummy.length % 2 === 0) {
+            await cache.set("MainQUEUE", JSON.stringify([]));
+            ImplementMassSocketConnection(dummy, socket);
+          } else {
+            await cache.set(
+              "MainQUEUE",
+              JSON.stringify([dummy[dummy.length - 1]])
+            );
+            dummy.pop();
+            ImplementMassSocketConnection(dummy, socket);
+          }
         }
-      }
-    }, 5000);
+      }, 5000);
+    }
+    JoinCommunicationQueue(socket, cache, userID);
   });
 
   socket.on("notify-broadcaster", (roomID) => {
@@ -96,18 +98,14 @@ io.on("connection", (socket) => {
     socket.broadcast.to(roomID).emit("message-receiver", { message, id });
   });
 
+  socket.on("ConnectToNewSocket", (userID, roomID) => {
+    socket.leave(roomID);
+    HandleSocketDisconnection(socket, io);
+    JoinCommunicationQueue(socket, cache, userID);
+  });
+
   socket.on("disconnect", () => {
-    const roomID = socket.handshake.query.myRoomID;
-    const client = io.sockets.adapter.rooms.get(roomID);
-    if (client) {
-      const clientArr = Array.from(client);
-      if (clientArr.length > 0) {
-        if (io.sockets.sockets.get(clientArr[0])) {
-          io.sockets.sockets.get(clientArr[0]).leave(roomID);
-        }
-        io.to(clientArr[0]).emit("requestReconnection");
-      }
-    }
+    HandleSocketDisconnection(socket, io);
   });
 });
 

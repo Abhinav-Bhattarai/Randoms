@@ -9,12 +9,33 @@ export const ImplementMassSocketConnection = async(dummy, socket) => {
   let providerID = 0;
   let consumerID = 0;
   for (providerID of PROVIDER_QUEUE) {
-    console.log(providerID.socketID, providerID.roomID);
     socket.joinTwoWay(providerID.socketID, providerID.roomID);
   }
   for (consumerID in CONSUMER_QUEUE) {
-    console.log(CONSUMER_QUEUE[consumerID].socketID, PROVIDER_QUEUE[consumerID].roomID);
     socket.joinTwoWay(CONSUMER_QUEUE[consumerID].socketID, PROVIDER_QUEUE[consumerID].roomID);
     socket.broadcast.to(PROVIDER_QUEUE[consumerID].roomID).emit('connectionReceive', PROVIDER_QUEUE[consumerID].roomID);
   }
 };
+
+export const HandleSocketDisconnection = (socket, io) => {
+  const roomID = socket.handshake.query.myRoomID;
+  const client = io.sockets.adapter.rooms.get(roomID);
+  if (client) {
+    // converting set into array;
+    const clientArr = Array.from(client);
+    if (clientArr.length > 0) {
+      io.sockets.adapter.rooms.delete(roomID);
+      io.to(clientArr[0]).emit("requestReconnection");
+    }
+  }
+}
+
+export const JoinCommunicationQueue = async(socket, cache, id) => {
+  socket.handshake.query.myRoomID = id;
+  const STRINGLIFIED_QUEUE = await cache.get("MainQUEUE");
+  const MainQueue = JSON.parse(STRINGLIFIED_QUEUE);
+  if (MainQueue) {
+    MainQueue.push({ roomID: id, socketID: socket.id });
+    AddIdToRedisQueue(cache, MainQueue);
+  };
+}
