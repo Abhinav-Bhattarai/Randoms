@@ -112,6 +112,7 @@ const MainPage: React.FC<ContainerProps> = (props) => {
         MyVideoRef.current.srcObject = stream;
       }
     } catch (error) {
+      console.log(error);
     }
   };
 
@@ -122,7 +123,17 @@ const MainPage: React.FC<ContainerProps> = (props) => {
     }
   };
 
-  const ChangeSocketConn = () => {};
+  const ChangeSocketConn = () => {
+    if (socket && userInfo) {
+      socket.emit("ConnectToNewSocket", userInfo.userID, conn_roomID);
+      setroomID(null);
+      setMessageList([]);
+      setMessageValue('');
+      if (PeerVideoRef.current) {
+        PeerVideoRef.current.srcObject = null;
+      }
+    }
+  };
 
   useEffect(() => {
     const StorageConfig = FetchDatafromLocalStorage();
@@ -168,6 +179,9 @@ const MainPage: React.FC<ContainerProps> = (props) => {
         setroomID(null);
         setMessageList([]);
         setMessageValue('');
+        if (PeerVideoRef.current) {
+          PeerVideoRef.current.srcObject = null;
+        }
       })
 
       return () => {
