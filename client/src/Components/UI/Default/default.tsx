@@ -4,13 +4,13 @@ import DefaultLogo from "../../../assets/default.svg";
 const Default = () => {
   return (
     <React.Fragment>
-      <img src={DefaultLogo} width="404px" height="404px" alt="def" />
+      <img src={DefaultLogo} width="80%" height="80%" alt="def" />
       <div
         style={{
           fontWeight: "bold",
           color: "grey",
-          fontSize: "20px",
-          marginTop: "-70px",
+          fontSize: "18px",
+          marginTop: "-60px",
         }}
       >
         Start calling Randoms

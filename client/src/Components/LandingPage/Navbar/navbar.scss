@@ -39,6 +39,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    // background-color: yellow;
 
     .navigators {
       border-radius: 8px;
@@ -89,4 +90,28 @@
   #mid-nav-section {
     flex: 2;
   }
+};
+
+@media all and (max-width: 1300px) {
+  #navbar-container {
+    #mid-nav-section  {
+      flex: 1;
+    }
+  } 
+}
+
+@media all and (max-width: 1100px) {
+  #navbar-container {
+    #mid-nav-section  {
+      flex: 0.5;
+    }
+  } 
+}
+
+@media all and (max-width: 800px) {
+  #navbar-container {
+    #mid-nav-section  {
+      flex: 0;
+    }
+  } 
 }

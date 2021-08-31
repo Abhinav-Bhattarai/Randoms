@@ -1,5 +1,5 @@
 import React from "react";
-import '../style.scss'
+import "../style.scss";
 interface MessageSenderProps {
   value: string | undefined;
   Change: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -10,6 +10,7 @@ export const MessageSender: React.FC<MessageSenderProps> = (props) => {
   return (
     <div id="messege-sender-container">
       <input
+        autoComplete="off"
         value={value}
         onChange={Change}
         placeholder="Enter your message here"
@@ -21,8 +22,10 @@ export const MessageSender: React.FC<MessageSenderProps> = (props) => {
   );
 };
 
-export const MessagesArea: React.FC<{}> = ({ children }) => {
-  return <main id="messages-area">{children}</main>;
+export const MessagesArea: React.FC<{
+  Reference: React.RefObject<HTMLDivElement>;
+}> = ({ children, Reference }) => {
+  return <main id="messages-area" ref={Reference}>{children}</main>;
 };
 
 const MessageSection: React.FC<{}> = ({ children }) => {

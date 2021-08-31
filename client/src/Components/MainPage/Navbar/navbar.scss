@@ -9,7 +9,7 @@
   transition: background 0.4s;
 
   &:nth-of-type(2) {
-    margin-right: auto;
+    margin-right: 5%;
   }
 
   &:nth-of-type(1) {
@@ -29,4 +29,37 @@
   color: #fff;
   font-weight: bold;
   font-size: 24px;
+}
+
+#dropdown-container {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 2%;
+  cursor: pointer;
+  transition: 0.3s;
+
+  &:hover {
+    background-color: rgb(41, 41, 41);
+  }
+}
+
+.dropdown {
+  font-size: 28px;
+  color: #fefefe;
+};
+
+@media all and (max-width: 700px) {
+  #navigator {
+    width: 35%;
+  }
+}
+
+@media all and (max-width: 600px) {
+  #navigator {
+    width: 42%;
+  }
 }

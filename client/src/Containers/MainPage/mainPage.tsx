@@ -58,6 +58,8 @@ const MainPage: React.FC<ContainerProps> = (props) => {
   const [messageValue, setMessageValue] = useState<string>("");
   const [streamData, setStream] = useState<MediaStream | null>(null);
   const [peerData, setPeer] = useState<null | Peer.Instance>(null);
+  const [requestCount, setRequestCount] = useState<number>(0);
+  const MessageAreaRef = useRef<HTMLDivElement>(null);
   const MyVideoRef = useRef<HTMLVideoElement>(null);
   const PeerVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -70,13 +72,17 @@ const MainPage: React.FC<ContainerProps> = (props) => {
     const dummy = [...messageList];
     dummy.push(data);
     setMessageList(dummy);
+    if (MessageAreaRef.current) {
+      // MessageAreaRef.current.scrollTop = MessageAreaRef.current.scrollHeight + 120;
+      MessageAreaRef.current.scrollTo(0, MessageAreaRef.current.scrollHeight)
+    }
   };
 
   const InitiateVideoCall = (initiator: boolean, roomID: string) => {
     if (streamData && socket) {
       const peer = new Peer({ initiator, trickle: false, stream: streamData });
       peer.on("signal", (signalData) => {
-        socket.emit('peerServer', {roomID, signalData});
+        socket.emit("peerServer", { roomID, signalData });
       });
 
       peer.on("stream", (streamObj) => {
@@ -108,18 +114,16 @@ const MainPage: React.FC<ContainerProps> = (props) => {
       });
       if (MyVideoRef.current) {
         setStream(stream);
-        // InitiateVideoCall(stream);
         MyVideoRef.current.srcObject = stream;
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   };
 
-  const StartSocketConn = async(reconnection: boolean = false) => {
+  const StartSocketConn = async (reconnection: boolean = false) => {
     if (socket && userInfo) {
       socket.emit("join", userInfo.userID);
       if (reconnection !== true) ManageMyVideoStream();
+      setRequestCount(requestCount + 1);
     }
   };
 
@@ -128,7 +132,8 @@ const MainPage: React.FC<ContainerProps> = (props) => {
       socket.emit("ConnectToNewSocket", userInfo.userID, conn_roomID);
       setroomID(null);
       setMessageList([]);
-      setMessageValue('');
+      setMessageValue("");
+      setRequestCount(requestCount + 1);
       if (PeerVideoRef.current) {
         PeerVideoRef.current.srcObject = null;
       }
@@ -168,28 +173,28 @@ const MainPage: React.FC<ContainerProps> = (props) => {
         UpdateMessageList({ ...data, self: false });
       });
 
-      socket.on('peerClientConnectionHandler', signalData => {
+      socket.on("peerClientConnectionHandler", (signalData) => {
         if (peerData) {
           peerData.signal(signalData);
         }
       });
 
-      socket.on('requestReconnection', () => {
+      socket.on("requestReconnection", () => {
         StartSocketConn(true);
         setroomID(null);
         setMessageList([]);
-        setMessageValue('');
+        setMessageValue("");
         if (PeerVideoRef.current) {
           PeerVideoRef.current.srcObject = null;
         }
-      })
+      });
 
       return () => {
         socket.off("message-receiver");
         socket.off("notification");
         socket.off("connectionReceive");
-        socket.off('requestReconnection');
-        socket.off('peerClientConnectionHandler');
+        socket.off("requestReconnection");
+        socket.off("peerClientConnectionHandler");
       };
     }
   });
@@ -223,7 +228,11 @@ const MainPage: React.FC<ContainerProps> = (props) => {
   return (
     <React.Fragment>
       <ApolloProvider client={client}>
-        <Navbar ClickStart={StartSocketConn} ClickNext={ChangeSocketConn} />
+        <Navbar
+          status={requestCount >= 1}
+          ClickStart={StartSocketConn}
+          ClickNext={ChangeSocketConn}
+        />
         <VideoSection>
           <Video muted={true} Reference={MyVideoRef} />
           <Video muted={false} Reference={PeerVideoRef} />
@@ -231,7 +240,9 @@ const MainPage: React.FC<ContainerProps> = (props) => {
         <MessageSection>
           {conn_roomID !== null ? (
             <>
-              <MessagesArea>{MessageContents}</MessagesArea>
+              <MessagesArea Reference={MessageAreaRef}>
+                {MessageContents}
+              </MessagesArea>
               <MessageSender
                 Change={ChangeMessageValue}
                 value={messageValue}
