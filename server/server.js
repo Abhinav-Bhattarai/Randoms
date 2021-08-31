@@ -94,11 +94,12 @@ io.on("connection", (socket) => {
 
   socket.on("message", (data) => {
     const { roomID, message } = data;
+    console.log(roomID, message);
     const id = Math.floor(Math.random() * 100000000).toString();
     socket.broadcast.to(roomID).emit("message-receiver", { message, id });
   });
 
-  socket.on("ConnectToNewSocket", (userID, roomID) => {
+  socket.on("ConnectToNewSocket", async(userID, roomID) => {
     socket.leave(roomID);
     HandleSocketDisconnection(socket, io);
     JoinCommunicationQueue(socket, cache, userID);
